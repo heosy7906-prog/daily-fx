@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily FX 2026-06-26 | 신한은행 S&T센터</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;background:#f8f9fa;color:#0b0b0b;min-height:100vh}
+  .wrap{padding:.75rem;max-width:100%}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+  .bank{font-size:11px;color:#898781;letter-spacing:.05em}
+  .date{font-size:11px;color:#898781}
+  .main-title{font-size:20px;font-weight:500;color:#0b0b0b;margin-bottom:.5rem}
+  .subtitle{font-size:12px;color:#52514e;margin-bottom:.75rem}
+  .ticker-row{display:flex;gap:1rem;flex-wrap:wrap;padding:.5rem .75rem;background:#fff;border:0.5px solid rgba(11,11,11,0.10);border-radius:8px;margin-bottom:.75rem;align-items:center}
+  .tick{display:flex;align-items:center;gap:.3rem;font-size:12px}
+  .tname{color:#898781;font-size:10px}
+  .tval{font-weight:500;color:#0b0b0b}
+  .tup{color:#e34948;font-size:10px}
+  .tdn{color:#1baf7a;font-size:10px}
+  .alert{background:#fef9ec;border:0.5px solid #f59e0b;border-left:3px solid #f59e0b;border-radius:8px;padding:.6rem .9rem;margin-bottom:.75rem;font-size:12px;color:#92400e;display:flex;gap:.5rem;line-height:1.5;align-items:flex-start}
+  .tabs{display:flex;border-bottom:1.5px solid rgba(11,11,11,0.10);margin-bottom:.75rem;gap:0}
+  .tab{padding:.45rem .85rem;font-size:12px;color:#52514e;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1.5px;white-space:nowrap;user-select:none;transition:color .15s}
+  .tab.active{color:#185fa5;border-bottom-color:#185fa5;font-weight:500}
+  .tab:hover:not(.active){color:#0b0b0b}
+  .panel{display:none}.panel.active{display:block}
+  .sec{font-size:10px;font-weight:500;color:#898781;letter-spacing:.07em;text-transform:uppercase;margin:.75rem 0 .4rem}
+  .kpi4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:.75rem}
+  .kpi{background:#f1f0e9;border:none;border-radius:8px;padding:.6rem .8rem}
+  .kpi .lbl{font-size:10px;color:#898781}
+  .kpi .val{font-size:15px;font-weight:500;margin-top:2px;color:#0b0b0b}
+  .kpi .chg{font-size:10px;margin-top:2px}
+  .up{color:#e34948}.dn{color:#1baf7a}.neu{color:#898781}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.75rem}
+  .card{background:#fff;border:0.5px solid rgba(11,11,11,0.10);border-radius:10px;padding:.8rem .9rem;margin-bottom:.75rem}
+  .card:last-child{margin-bottom:0}
+  .ctitle{font-size:10px;color:#898781;margin-bottom:.5rem;letter-spacing:.04em;text-transform:uppercase}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{color:#898781;font-weight:400;padding:3px 5px;border-bottom:0.5px solid rgba(11,11,11,0.10);text-align:left}
+  td{padding:4px 5px;border-bottom:0.5px solid rgba(11,11,11,0.06);color:#0b0b0b}
+  td.r{text-align:right}
+  tr:last-child td{border-bottom:none}
+  .bdg{display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:500}
+  .bdg-up{background:#fef2f2;color:#e34948}
+  .bdg-dn{background:#f0fdf4;color:#1baf7a}
+  .chart-wrap{position:relative;width:100%;height:200px}
+  .sc3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:.75rem}
+  .sc{border:0.5px solid rgba(11,11,11,0.10);border-radius:8px;padding:.7rem;text-align:center;background:#fff}
+  .sc.base{border-color:#185fa5;background:#eff6ff}
+  .sc.bear{border-color:#e34948;background:#fef2f2}
+  .sc.bull{border-color:#1baf7a;background:#f0fdf4}
+  .sc .slbl{font-size:10px;font-weight:500}
+  .sc.base .slbl{color:#185fa5}
+  .sc.bear .slbl{color:#e34948}
+  .sc.bull .slbl{color:#1baf7a}
+  .sc .sprob{font-size:18px;font-weight:500;margin:4px 0}
+  .sc.base .sprob{color:#185fa5}
+  .sc.bear .sprob{color:#e34948}
+  .sc.bull .sprob{color:#1baf7a}
+  .sc .srng{font-size:11px;color:#52514e}
+  .sc .sdesc{font-size:10px;color:#898781;margin-top:4px;line-height:1.5}
+  .strategy-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.75rem}
+  .st-card{background:#fff;border:0.5px solid rgba(11,11,11,0.10);border-radius:10px;padding:.8rem .9rem}
+  .st-badge{font-size:10px;padding:2px 8px;border-radius:3px;font-weight:500;display:inline-block;margin-bottom:.5rem}
+  .st-exp{background:#f0fdf4;color:#1baf7a}
+  .st-imp{background:#fef2f2;color:#e34948}
+  .st-off{background:#eff6ff;color:#185fa5}
+  .st-auth{background:#fffbeb;color:#92400e}
+  .st-body{font-size:12px;color:#52514e;line-height:1.6}
+  .insight{background:#fff;border:0.5px solid rgba(11,11,11,0.10);border-left:3px solid #f59e0b;border-radius:8px;padding:.75rem .9rem;margin-bottom:.75rem;font-size:12px;line-height:1.65;color:#0b0b0b}
+  .cal-item{display:flex;gap:.75rem;padding:.5rem 0;border-bottom:0.5px solid rgba(11,11,11,0.06);font-size:12px;align-items:flex-start}
+  .cal-item:last-child{border-bottom:none}
+  .cal-date{min-width:60px;color:#898781;font-size:11px}
+  .cal-imp{min-width:16px}
+  .cal-event{flex:1;color:#0b0b0b}
+  .cal-prev{color:#898781;font-size:11px;min-width:70px;text-align:right}
+  .imp-h{color:#e34948;font-weight:700}
+  .imp-m{color:#f59e0b;font-weight:700}
+  .imp-l{color:#898781}
+  .leg{display:flex;gap:14px;margin-bottom:.5rem;font-size:11px;color:#898781;align-items:center}
+  .leg span{display:flex;align-items:center;gap:5px}
+  .lb{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <span class="bank">신한은행 S&amp;T센터 · Daily FX</span>
+    <span class="date">2026. 06. 26</span>
+  </div>
+  <div class="main-title">현장 경보음이 울린 곳은?</div>
+  <div class="subtitle">백석현 이코노미스트 · 금일 예상 레인지 <span style="color:#185fa5;font-weight:500">1,540 – 1,551원</span></div>
+
+  <div class="ticker-row">
+    <div class="tick"><span class="tname">NDF 1M</span><span class="tval">1,544.8</span></div>
+    <div class="tick"><span class="tname">DXY</span><span class="tval">101.6</span><span class="tup">▲</span></div>
+    <div class="tick"><span class="tname">EUR/USD</span><span class="tval">1.1370</span><span class="tdn">▲0.0012</span></div>
+    <div class="tick"><span class="tname">USD/JPY</span><span class="tval">161.79</span><span class="tup">▲0.01</span></div>
+    <div class="tick"><span class="tname">KOSPI</span><span class="tval">8,930</span><span class="tdn">▲5.42%</span></div>
+    <div class="tick"><span class="tname">WTI</span><span class="tval">$71.92</span><span class="tup">▲1.58</span></div>
+  </div>
+
+  <div class="alert">
+    ⚠️ <span><strong>호르무즈 경보</strong> — 싱가포르 선적 컨테이너선 발사체 피격. IRGC 살라미 전술 지속. WTI +$1.58 반등. 미 PCE 4.1%(3년 최고). 환율 상방 편향 유지.</span>
+  </div>
+
+  <div class="tabs" id="tabBar">
+    <div class="tab active" data-tab="overview">시장개요</div>
+    <div class="tab" data-tab="global">글로벌동향</div>
+    <div class="tab" data-tab="rates">금리·파생</div>
+    <div class="tab" data-tab="scenario">시나리오</div>
+    <div class="tab" data-tab="strategy">참여주체전략</div>
+    <div class="tab" data-tab="calendar">경제캘린더</div>
+  </div>
+
+  <!-- 시장개요 -->
+  <div id="tab-overview" class="panel active">
+    <div class="sec">서울 외환시장 OHLC</div>
+    <div class="kpi4">
+      <div class="kpi"><div class="lbl">시가</div><div class="val">1,543.0</div><div class="chg neu">원</div></div>
+      <div class="kpi"><div class="lbl">고가</div><div class="val up">1,549.0</div><div class="chg neu">일중 고점</div></div>
+      <div class="kpi"><div class="lbl">저가</div><div class="val dn">1,538.0</div><div class="chg neu">일중 저점</div></div>
+      <div class="kpi"><div class="lbl">종가 (3:30)</div><div class="val">1,542.7</div><div class="chg up">+0.9원</div></div>
+    </div>
+    <div class="kpi4">
+      <div class="kpi"><div class="lbl">NDF 1M</div><div class="val">1,544.8</div><div class="chg neu">역외마감</div></div>
+      <div class="kpi"><div class="lbl">거래량</div><div class="val">177억불</div></div>
+      <div class="kpi"><div class="lbl">위안/원 종가</div><div class="val">226.6</div><div class="chg up">+0.1</div></div>
+      <div class="kpi"><div class="lbl">평균환율</div><div class="val">1,545.3</div></div>
+    </div>
+    <div class="two">
+      <div class="card" style="margin-bottom:0">
+        <div class="ctitle">주요 통화 환율</div>
+        <table>
+          <thead><tr><th>통화쌍</th><th class="r">환율</th><th class="r">전일비</th></tr></thead>
+          <tbody>
+            <tr><td>USD/KRW</td><td class="r">1,543.15</td><td class="r"><span class="bdg bdg-up">+9.40</span></td></tr>
+            <tr><td>JPY/KRW</td><td class="r">953.80</td><td class="r"><span class="bdg bdg-up">+4.46</span></td></tr>
+            <tr><td>EUR/KRW</td><td class="r">1,755.15</td><td class="r"><span class="bdg bdg-up">+9.72</span></td></tr>
+            <tr><td>GBP/KRW</td><td class="r">2,035.31</td><td class="r"><span class="bdg bdg-up">+3.81</span></td></tr>
+            <tr><td>AUD/KRW</td><td class="r">1,066.22</td><td class="r"><span class="bdg bdg-up">+1.80</span></td></tr>
+            <tr><td>CAD/KRW</td><td class="r">1,086.65</td><td class="r"><span class="bdg bdg-up">+2.87</span></td></tr>
+            <tr><td>USD/JPY</td><td class="r">161.79</td><td class="r"><span class="bdg bdg-up">+0.01</span></td></tr>
+            <tr><td>EUR/USD</td><td class="r">1.1370</td><td class="r"><span class="bdg bdg-dn">+0.0012</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="ctitle">원자재·기타</div>
+        <table>
+          <thead><tr><th>종목</th><th class="r">종가</th><th class="r">전일비</th></tr></thead>
+          <tbody>
+            <tr><td>WTI (선물)</td><td class="r">$71.92</td><td class="r up">+1.58</td></tr>
+            <tr><td>금 (선물)</td><td class="r">$4,030.50</td><td class="r dn">-99.40</td></tr>
+            <tr><td>3M SOFR</td><td class="r">3.74%</td><td class="r neu">0.00</td></tr>
+            <tr><td>3M EURIBOR</td><td class="r">2.30%</td><td class="r dn">-0.02</td></tr>
+            <tr><td>KOR CDS 5Y</td><td class="r">22.08bp</td><td class="r dn">-0.65</td></tr>
+          </tbody>
+        </table>
+        <div class="ctitle" style="margin-top:.75rem">금일 전망</div>
+        <div style="font-size:12px;color:#52514e;line-height:1.6;padding:.3rem 0">
+          예상 레인지 <strong style="color:#185fa5">1,540–1,551원</strong>. 개장 예상 <strong>1,546원</strong>. 달러 관성·Fed 매파 경계 유효. <span class="up">상방 편향 유지.</span>
+        </div>
+      </div>
+    </div>
+    <div class="insight">
+      <strong>백석현 (신한은행 S&T센터)</strong> — 호르무즈 해협 컨테이너선 피격은 IRGC 살라미 전술의 일환. 미·이란 MOU 기간 중에도 리스크 잠복. 미 PCE 4.1%(3년 최고), 근원 3.4%. 유가 반등 → 인플레 고착 → Fed 인하 지연 연결고리 주목. <strong>환율 방향성 상방.</strong>
+    </div>
+  </div>
+
+  <!-- 글로벌동향 -->
+  <div id="tab-global" class="panel">
+    <div class="sec">글로벌 주요 증시</div>
+    <div class="card">
+      <div class="chart-wrap">
+        <canvas id="equityChart" role="img" aria-label="글로벌 주요 증시 등락률">KOSPI +5.42%, DOW +0.14%, NIKKEI +4.61%, 상해 +0.23%, FTSE +0.65%</canvas>
+      </div>
+    </div>
+    <div class="two">
+      <div class="card" style="margin-bottom:0">
+        <div class="ctitle">증시 상세</div>
+        <table>
+          <thead><tr><th>지수</th><th class="r">종가</th><th class="r">등락</th></tr></thead>
+          <tbody>
+            <tr><td>KOSPI</td><td class="r">8,930.30</td><td class="r"><span class="bdg bdg-dn">+5.42%</span></td></tr>
+            <tr><td>미국 DOW</td><td class="r">51,920.62</td><td class="r"><span class="bdg bdg-dn">+0.14%</span></td></tr>
+            <tr><td>일본 NIKKEI</td><td class="r">72,366.34</td><td class="r"><span class="bdg bdg-dn">+4.61%</span></td></tr>
+            <tr><td>중국 상해</td><td class="r">4,120.28</td><td class="r"><span class="bdg bdg-dn">+0.23%</span></td></tr>
+            <tr><td>영국 FTSE</td><td class="r">10,529.89</td><td class="r"><span class="bdg bdg-dn">+0.65%</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="ctitle">원자재·기타</div>
+        <table>
+          <thead><tr><th>종목</th><th class="r">종가</th><th class="r">전일비</th></tr></thead>
+          <tbody>
+            <tr><td>WTI (선물)</td><td class="r">$71.92</td><td class="r up">+1.58</td></tr>
+            <tr><td>금 (선물)</td><td class="r">$4,030.50</td><td class="r dn">-99.40</td></tr>
+            <tr><td>3M SOFR</td><td class="r">3.74%</td><td class="r neu">0.00</td></tr>
+            <tr><td>3M EURIBOR</td><td class="r">2.30%</td><td class="r dn">-0.02</td></tr>
+            <tr><td>KOR CDS 5Y</td><td class="r">22.08bp</td><td class="r dn">-0.65</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 금리·파생 -->
+  <div id="tab-rates" class="panel">
+    <div class="sec">원화 IRS / CRS 커브</div>
+    <div class="card">
+      <div class="leg">
+        <span><span class="lb" style="background:#2a78d6"></span>IRS</span>
+        <span><span style="width:16px;height:0;border-top:2px dashed #1baf7a;display:inline-block"></span>&nbsp;CRS</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="irsChart" role="img" aria-label="원화 IRS CRS 커브">IRS 1Y 3.489~10Y 4.012%, CRS 1Y 3.005~10Y 3.340%</canvas>
+      </div>
+    </div>
+    <div class="two">
+      <div class="card" style="margin-bottom:0">
+        <div class="ctitle">원화 IRS / CRS (%)</div>
+        <table>
+          <thead><tr><th>만기</th><th class="r">IRS</th><th class="r">Δ</th><th class="r">CRS</th><th class="r">Δ</th></tr></thead>
+          <tbody>
+            <tr><td>1Y</td><td class="r">3.489</td><td class="r dn">-0.020</td><td class="r">3.005</td><td class="r dn">-0.04</td></tr>
+            <tr><td>2Y</td><td class="r">3.786</td><td class="r dn">-0.023</td><td class="r">3.205</td><td class="r dn">-0.01</td></tr>
+            <tr><td>3Y</td><td class="r">3.878</td><td class="r dn">-0.023</td><td class="r">3.265</td><td class="r neu">0.00</td></tr>
+            <tr><td>5Y</td><td class="r">3.949</td><td class="r dn">-0.027</td><td class="r">3.350</td><td class="r dn">-0.04</td></tr>
+            <tr><td>7Y</td><td class="r">3.980</td><td class="r dn">-0.030</td><td class="r">3.440</td><td class="r dn">-0.03</td></tr>
+            <tr><td>10Y</td><td class="r">4.012</td><td class="r dn">-0.027</td><td class="r">3.340</td><td class="r dn">-0.03</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="ctitle">FX 스왑포인트 (전)</div>
+        <table>
+          <thead><tr><th>만기</th><th class="r">스왑포인트</th><th class="r">Δ</th><th class="r">Implied CRS</th></tr></thead>
+          <tbody>
+            <tr><td>1M</td><td class="r">-75</td><td class="r up">+15.00</td><td class="r">3.08%</td></tr>
+            <tr><td>3M</td><td class="r">-295</td><td class="r up">+25.00</td><td class="r">2.98%</td></tr>
+            <tr><td>6M</td><td class="r">-700</td><td class="r up">+10.00</td><td class="r">2.98%</td></tr>
+            <tr><td>1Y</td><td class="r">-1,520</td><td class="r dn">-10.00</td><td class="r">3.03%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="two" style="margin-top:.75rem">
+      <div class="card" style="margin-bottom:0">
+        <div class="ctitle">기준금리 및 채권금리 (%)</div>
+        <table>
+          <thead><tr><th>구분</th><th class="r">종가</th><th class="r">Δ</th></tr></thead>
+          <tbody>
+            <tr><td>CD 91일</td><td class="r">2.92</td><td class="r neu">0.00</td></tr>
+            <tr><td>통안 1Y</td><td class="r">2.18</td><td class="r neu">0.00</td></tr>
+            <tr><td>국고 3Y</td><td class="r">3.76</td><td class="r dn">-0.01</td></tr>
+            <tr><td>국고 5Y</td><td class="r">4.00</td><td class="r dn">-0.02</td></tr>
+            <tr><td>국고 10Y</td><td class="r">4.16</td><td class="r dn">-0.02</td></tr>
+            <tr><td>국고선물(3Y)</td><td class="r">103.21</td><td class="r dn">+0.10</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="ctitle">미국 국채 / IRS (%)</div>
+        <table>
+          <thead><tr><th>만기</th><th class="r">국채</th><th class="r">Δ</th><th class="r">IRS</th></tr></thead>
+          <tbody>
+            <tr><td>1Y</td><td class="r">3.94</td><td class="r dn">-0.044</td><td class="r">3.99</td></tr>
+            <tr><td>2Y</td><td class="r">4.12</td><td class="r dn">-0.075</td><td class="r">3.98</td></tr>
+            <tr><td>3Y</td><td class="r">4.12</td><td class="r dn">-0.096</td><td class="r">3.92</td></tr>
+            <tr><td>5Y</td><td class="r">4.17</td><td class="r dn">-0.103</td><td class="r">3.88</td></tr>
+            <tr><td>10Y</td><td class="r">4.39</td><td class="r dn">-0.105</td><td class="r">3.99</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 시나리오 -->
+  <div id="tab-scenario" class="panel">
+    <div class="sec">3대 시나리오 확률 분석</div>
+    <div class="sc3">
+      <div class="sc base">
+        <div class="slbl">BASE · 60%</div>
+        <div class="sprob">1,540–1,551원</div>
+        <div class="srng" style="margin-top:4px">달러 관성 유지</div>
+        <div class="sdesc">호르무즈 리스크 잠복, Fed 매파 경계 지속. 네고 vs 결제 균형 속 완만한 상승.</div>
+      </div>
+      <div class="sc bear">
+        <div class="slbl">BEAR (원화약세) · 30%</div>
+        <div class="sprob">1,551원↑</div>
+        <div class="srng" style="margin-top:4px">추가 피격·PCE 강화</div>
+        <div class="sdesc">호르무즈 추가 사건, 유가 재급등, Fed 금리인상론 재부상.</div>
+      </div>
+      <div class="sc bull">
+        <div class="slbl">BULL (원화강세) · 10%</div>
+        <div class="sprob">1,540원↓</div>
+        <div class="srng" style="margin-top:4px">달러 약세 전환</div>
+        <div class="sdesc">이란 협상 진전, 유가 안정, 외국인 주식 순매수 확대.</div>
+      </div>
+    </div>
+    <div class="insight">
+      <strong>핵심 변수 모니터링</strong><br>
+      ① 호르무즈 추가 피격 여부 — IRGC 살라미 전술 지속성<br>
+      ② 미국 PCE 추이 → Fed 7월 FOMC 점도표 방향<br>
+      ③ WGBI 유입 가속 여부 — 원화 구조적 강세 압력<br>
+      ④ 외국인 KOSPI 순매수 지속 여부 (전일 오후 순매도 축소 확인)
+    </div>
+  </div>
+
+  <!-- 참여주체전략 -->
+  <div id="tab-strategy" class="panel">
+    <div class="sec">참여주체별 전략</div>
+    <div class="strategy-grid">
+      <div class="st-card">
+        <span class="st-badge st-exp">수출업체 (네고)</span>
+        <div class="st-body">1,545원 이상 구간에서 분할 네고 권장. 상방 모멘텀 유효하나 호르무즈 리스크로 단기 변동성 확대 가능. 1,550원 근방 적극 매도 고려.</div>
+      </div>
+      <div class="st-card">
+        <span class="st-badge st-imp">수입업체 (결제)</span>
+        <div class="st-body">1,540원 지지 구간 하락 시 결제 기회. 환율 방향성 상방인 만큼 과도한 결제 지연 비권장. 1,538–1,542원 저점 활용 분할 매수.</div>
+      </div>
+      <div class="st-card">
+        <span class="st-badge st-off">역외 투자자</span>
+        <div class="st-body">달러 롱 포지션 유지 기조. KOSPI 급등(+5.42%)에도 환헤지 수요로 NDF 매수 지속 예상. 호르무즈 이벤트 재발 시 추가 롱 진입 가능성.</div>
+      </div>
+      <div class="st-card">
+        <span class="st-badge st-auth">당국 / NPS</span>
+        <div class="st-body">1,550원 상단 접근 시 당국 스무딩 개입 경계. NPS 전략적 환헤지 확대 여부 모니터링. 외평기금 FX스왑 활용한 달러 공급 가능성 주시.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 경제캘린더 -->
+  <div id="tab-calendar" class="panel">
+    <div class="sec">주요 경제 일정 (3일)</div>
+    <div class="card">
+      <div class="ctitle" style="margin-bottom:.6rem">2026년 6월 26일(금) ~ 6월 28일(일)</div>
+      <div class="cal-item">
+        <div class="cal-date">6/26 (금)</div>
+        <div class="cal-imp"><span class="imp-h">●</span></div>
+        <div class="cal-event">미국 5월 PCE 인플레이션</div>
+        <div class="cal-prev">발표 4.1%</div>
+      </div>
+      <div class="cal-item">
+        <div class="cal-date">6/26 (금)</div>
+        <div class="cal-imp"><span class="imp-m">●</span></div>
+        <div class="cal-event">미국 5월 개인소비지출 (실질 +0.3%)</div>
+        <div class="cal-prev">—</div>
+      </div>
+      <div class="cal-item">
+        <div class="cal-date">6/26 (금)</div>
+        <div class="cal-imp"><span class="imp-h">●</span></div>
+        <div class="cal-event">호르무즈 해협 선박 피격 (지정학)</div>
+        <div class="cal-prev">WTI +$1.58</div>
+      </div>
+      <div class="cal-item">
+        <div class="cal-date">6/27 (토)</div>
+        <div class="cal-imp"><span class="imp-l">●</span></div>
+        <div class="cal-event">주요 일정 없음</div>
+        <div class="cal-prev">—</div>
+      </div>
+      <div class="cal-item">
+        <div class="cal-date">6/28 (일)</div>
+        <div class="cal-imp"><span class="imp-l">●</span></div>
+        <div class="cal-event">주요 일정 없음 (주말)</div>
+        <div class="cal-prev">—</div>
+      </div>
+      <div style="margin-top:.75rem;padding-top:.5rem;border-top:0.5px solid rgba(11,11,11,0.10);font-size:11px;color:#898781">
+        <span class="imp-h">●</span> 고중요도 &nbsp;<span class="imp-m">●</span> 중간 &nbsp;<span class="imp-l">●</span> 낮음
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let equityDone = false, irsDone = false;
+
+document.getElementById('tabBar').addEventListener('click', function(e) {
+  const tab = e.target.closest('.tab');
+  if (!tab) return;
+  const id = tab.getAttribute('data-tab');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+  if (id === 'global' && !equityDone) { renderEquity(); equityDone = true; }
+  if (id === 'rates' && !irsDone) { renderIRS(); irsDone = true; }
+});
+
+function renderEquity() {
+  const labels = ['KOSPI','DOW','NIKKEI','상해','FTSE'];
+  const data = [5.42, 0.14, 4.61, 0.23, 0.65];
+  const colors = data.map(v => v >= 0 ? 'rgba(42,120,214,0.75)' : 'rgba(227,73,72,0.75)');
+  new Chart(document.getElementById('equityChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 3, borderSkipped: false }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(2) + '%' } } },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { color: '#898781', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { color: '#898781', font: { size: 11 }, callback: v => v.toFixed(1) + '%' } }
+      }
+    }
+  });
+}
+
+function renderIRS() {
+  new Chart(document.getElementById('irsChart'), {
+    type: 'line',
+    data: {
+      labels: ['1Y','2Y','3Y','4Y','5Y','7Y','10Y'],
+      datasets: [
+        { label:'IRS', data:[3.489,3.786,3.878,3.918,3.949,3.980,4.012], borderColor:'#2a78d6', backgroundColor:'rgba(42,120,214,0.07)', borderWidth:2, pointRadius:4, pointBackgroundColor:'#2a78d6', fill:true, tension:0.3 },
+        { label:'CRS', data:[3.005,3.205,3.265,3.290,3.350,3.440,3.340], borderColor:'#1baf7a', borderDash:[5,4], backgroundColor:'transparent', borderWidth:2, pointRadius:4, pointBackgroundColor:'#1baf7a', fill:false, tension:0.3 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { mode:'index', intersect:false, callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(3) + '%' } } },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { color: '#898781', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { color: '#898781', font: { size: 11 }, callback: v => v.toFixed(2) + '%' }, min: 2.8, max: 4.2 }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
