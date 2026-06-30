@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily FX Report | 2026-06-30</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --blue: #185fa5;
+    --blue-light: #e8f0fb;
+    --red: #e34948;
+    --red-light: #fdeaea;
+    --green: #1baf7a;
+    --green-light: #e6f7f1;
+    --orange: #f07c35;
+    --text: #1a1d23;
+    --sub: #5a6270;
+    --border: #dee2e8;
+    --shadow: 0 1px 4px rgba(0,0,0,0.08);
+    --radius: 10px;
+    --header-h: 54px;
+    --ticker-h: 36px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); font-size: 13px; }
+
+  /* ── TICKER ── */
+  .ticker-bar { background: #0d1b2e; height: var(--ticker-h); overflow: hidden; display: flex; align-items: center; }
+  .ticker-track { display: flex; gap: 40px; animation: ticker 40s linear infinite; white-space: nowrap; padding-left: 100%; }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  .ticker-item { font-size: 12px; color: #9cb3d0; display: flex; gap: 8px; }
+  .ticker-item .label { color: #cdd8e8; font-weight: 600; }
+  .ticker-item .val { color: #fff; }
+  .ticker-item .up { color: #4ed8a0; }
+  .ticker-item .dn { color: #ff7272; }
+
+  /* ── HEADER ── */
+  .header { background: var(--blue); height: var(--header-h); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-logo { font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+  .header-sub { font-size: 11px; color: rgba(255,255,255,0.65); }
+  .header-date { font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 600; }
+  .header-badge { background: rgba(255,255,255,0.18); color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 700; }
+
+  /* ── ALERT ── */
+  .alert-bar { background: #fff8ed; border-bottom: 1px solid #f5d9a8; padding: 7px 20px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: #7a4f10; }
+  .alert-icon { font-size: 14px; }
+  .alert-strong { font-weight: 700; color: #c0641a; }
+
+  /* ── TABS ── */
+  .tab-nav { background: var(--card); border-bottom: 2px solid var(--border); display: flex; padding: 0 20px; gap: 2px; overflow-x: auto; }
+  .tab-btn { padding: 11px 16px; font-size: 12px; font-weight: 600; color: var(--sub); border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; white-space: nowrap; }
+  .tab-btn:hover { color: var(--blue); }
+  .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* ── CONTENT ── */
+  .tab-content { display: none; padding: 16px 20px 24px; max-width: 1200px; }
+  .tab-content.active { display: block; }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+  .col-span-2 { grid-column: span 2; }
+  .col-span-3 { grid-column: span 3; }
+
+  /* ── CARD ── */
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+  .card-title { font-size: 11px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .card-title::before { content: ''; display: inline-block; width: 3px; height: 12px; background: var(--blue); border-radius: 2px; }
+
+  /* ── KPI ── */
+  .kpi-val { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); line-height: 1; }
+  .kpi-val.up { color: var(--red); }
+  .kpi-val.dn { color: var(--blue); }
+  .kpi-chg { font-size: 11px; margin-top: 4px; font-weight: 600; }
+  .kpi-chg.up { color: var(--red); }
+  .kpi-chg.dn { color: var(--blue); }
+  .kpi-label { font-size: 10px; color: var(--sub); margin-top: 2px; }
+  .kpi-range { font-size: 11px; color: var(--sub); margin-top: 6px; }
+  .kpi-range span { font-weight: 700; color: var(--text); }
+
+  /* ── SCENARIO ── */
+  .scenario-row { display: flex; gap: 12px; margin-bottom: 10px; }
+  .scenario-card { flex: 1; border-radius: 8px; padding: 12px 14px; }
+  .scenario-card.base { background: var(--blue-light); border: 1px solid #b8d0f0; }
+  .scenario-card.bull { background: var(--green-light); border: 1px solid #9ddac4; }
+  .scenario-card.bear { background: var(--red-light); border: 1px solid #f5b8b8; }
+  .sc-label { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .base .sc-label { color: var(--blue); }
+  .bull .sc-label { color: var(--green); }
+  .bear .sc-label { color: var(--red); }
+  .sc-range { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+  .sc-prob { font-size: 11px; color: var(--sub); margin-bottom: 6px; }
+  .sc-desc { font-size: 11px; line-height: 1.55; color: var(--text); }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 10px; font-weight: 700; color: var(--sub); text-align: left; padding: 5px 8px; background: #f6f8fb; border-bottom: 1px solid var(--border); }
+  td { font-size: 12px; padding: 6px 8px; border-bottom: 1px solid #f0f2f5; }
+  tr:last-child td { border-bottom: none; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .up-text { color: var(--red); font-weight: 600; }
+  .dn-text { color: var(--blue); font-weight: 600; }
+  .neutral-text { color: var(--sub); }
+
+  /* ── CALENDAR ── */
+  .cal-day { margin-bottom: 14px; }
+  .cal-day-title { font-size: 11px; font-weight: 800; color: var(--blue); background: var(--blue-light); padding: 5px 10px; border-radius: 6px; margin-bottom: 6px; }
+  .cal-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid #f0f2f5; }
+  .cal-time { font-size: 10px; color: var(--sub); width: 40px; flex-shrink: 0; padding-top: 2px; font-weight: 600; }
+  .cal-desc { font-size: 12px; flex: 1; line-height: 1.4; }
+  .cal-imp { font-size: 10px; color: #e8a020; margin-left: 4px; }
+  .cal-act { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-left: 4px; }
+  .act-beat { background: #e6f7f1; color: var(--green); }
+  .act-miss { background: var(--red-light); color: var(--red); }
+  .act-match { background: #f0f2f5; color: var(--sub); }
+
+  /* ── PARTICIPANT ── */
+  .participant { margin-bottom: 12px; padding: 12px 14px; border-radius: 8px; border-left: 4px solid var(--blue); background: #fafbfd; }
+  .p-title { font-size: 12px; font-weight: 800; margin-bottom: 5px; color: var(--blue); }
+  .p-body { font-size: 12px; line-height: 1.65; color: var(--text); }
+
+  /* ── FLOW BADGE ── */
+  .flow-badge { display: inline-block; padding: 2px 7px; border-radius: 12px; font-size: 10px; font-weight: 700; margin-right: 4px; }
+  .flow-buy { background: var(--red-light); color: var(--red); }
+  .flow-sell { background: var(--blue-light); color: var(--blue); }
+  .flow-watch { background: #fff3e0; color: var(--orange); }
+
+  /* ── INSIGHT BOX ── */
+  .insight { background: linear-gradient(135deg, #0d1b2e, #1a3560); color: #e8f0fb; border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; }
+  .insight-title { font-size: 13px; font-weight: 800; color: #7bb8ff; margin-bottom: 8px; }
+  .insight-body { font-size: 12px; line-height: 1.7; }
+  .insight-body strong { color: #ffd580; }
+
+  /* ── SECTION TITLE ── */
+  .section-title { font-size: 12px; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 8px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+
+  /* ── CHART WRAPPER ── */
+  .chart-wrap { position: relative; height: 200px; }
+  .chart-wrap-sm { position: relative; height: 160px; }
+  .chart-wrap-md { position: relative; height: 240px; }
+
+  /* ── SUPPLY FACTOR ── */
+  .factor-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #e8eaee; font-size: 12px; }
+  .factor-dir { width: 50px; flex-shrink: 0; }
+  .factor-bar { flex: 1; height: 6px; border-radius: 3px; background: #eee; overflow: hidden; }
+  .factor-fill { height: 100%; border-radius: 3px; }
+
+  @media (max-width: 700px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .col-span-2, .col-span-3 { grid-column: span 1; }
+    .scenario-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div>
+      <div class="header-logo">Daily FX Report</div>
+      <div class="header-sub">KB국민은행 × 신한은행 S&T센터 종합</div>
+    </div>
+    <div class="header-badge">2026.06.30 (화)</div>
+  </div>
+  <div class="header-date">상반기 마지막 날 · 분기말 이벤트 주목</div>
+</div>
+
+<!-- ALERT -->
+<div class="alert-bar">
+  <span class="alert-icon">⚠️</span>
+  <span><span class="alert-strong">[분기말 경보]</span> 외국인 리밸런싱 달러 매수 vs 수출 네고·SK하이닉스 ADR 달러 공급 충돌 — 당국 종가관리 실개입 여부 주시. 금일 레인지: <strong>1,530~1,550원</strong></span>
+</div>
+
+<!-- TABS -->
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="overview">📊 시장개요</button>
+  <button class="tab-btn" data-tab="global">🌐 글로벌동향</button>
+  <button class="tab-btn" data-tab="rates">📈 금리·파생</button>
+  <button class="tab-btn" data-tab="scenario">🎯 시나리오</button>
+  <button class="tab-btn" data-tab="participants">👥 참여주체전략</button>
+  <button class="tab-btn" data-tab="calendar">📅 경제캘린더</button>
+</div>
+
+<!-- ─── TAB 1: 시장개요 ─── -->
+<div class="tab-content active" id="tab-overview">
+  <div class="grid-4" style="margin-bottom:14px;">
+    <div class="card">
+      <div class="card-title">달러/원 종가</div>
+      <div class="kpi-val up">1,545.2</div>
+      <div class="kpi-chg up">▲ 13.2원</div>
+      <div class="kpi-label">서울 정규장 3시 30분</div>
+      <div class="kpi-range">야간: <span>1,543.0원</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">NDF 1M</div>
+      <div class="kpi-val dn">1,540.30</div>
+      <div class="kpi-chg dn">▼ 4.15원</div>
+      <div class="kpi-label">역외 최종 호가</div>
+      <div class="kpi-range">1M 스왑: <span>-0.75원</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">달러 인덱스</div>
+      <div class="kpi-val dn">101.13</div>
+      <div class="kpi-chg dn">▼ 0.24%</div>
+      <div class="kpi-label">중동 긴장 완화 달러 약세</div>
+    </div>
+    <div class="card">
+      <div class="card-title">달러/엔</div>
+      <div class="kpi-val up">161.94</div>
+      <div class="kpi-chg up">▲ 0.10엔</div>
+      <div class="kpi-label">실개입 경계 고조</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:14px;">
+    <div class="card">
+      <div class="card-title">주요 환율 현황</div>
+      <table>
+        <thead><tr><th>통화쌍</th><th class="num">종가</th><th class="num">전일비</th></tr></thead>
+        <tbody>
+          <tr><td><strong>USD/KRW</strong></td><td class="num">1,542.00</td><td class="num dn-text">▼1.15</td></tr>
+          <tr><td>JPY/KRW</td><td class="num">951.97</td><td class="num up-text">▲3.23</td></tr>
+          <tr><td>EUR/KRW</td><td class="num">1,761.46</td><td class="num up-text">▲6.31</td></tr>
+          <tr><td>GBP/KRW</td><td class="num">2,044.12</td><td class="num up-text">▲18.54</td></tr>
+          <tr><td>AUD/KRW</td><td class="num">1,061.68</td><td class="num up-text">▲3.54</td></tr>
+          <tr><td>USD/JPY</td><td class="num">161.94</td><td class="num up-text">▲0.20</td></tr>
+          <tr><td>EUR/USD</td><td class="num">1.1422</td><td class="num up-text">▲0.0038</td></tr>
+          <tr><td>USD/CNH</td><td class="num">6.800</td><td class="num dn-text">▼0.07</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">서울 외환시장 OHLC</div>
+      <table>
+        <thead><tr><th>구분</th><th class="num">달러/원</th><th class="num">위안/원</th></tr></thead>
+        <tbody>
+          <tr><td>시가</td><td class="num">1,536.5</td><td class="num">225.9</td></tr>
+          <tr><td>고가</td><td class="num">1,545.9</td><td class="num">227.3</td></tr>
+          <tr><td>저가</td><td class="num">1,535.1</td><td class="num">225.9</td></tr>
+          <tr><td>종가</td><td class="num"><strong>1,545.2</strong></td><td class="num"><strong>227.3</strong></td></tr>
+          <tr><td>전일비</td><td class="num up-text">+13.2</td><td class="num up-text">+2.0</td></tr>
+          <tr><td>평균</td><td class="num">1,541.5</td><td class="num">227.0</td></tr>
+          <tr><td>거래량</td><td class="num">332억불</td><td class="num">318억위안</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:10px; padding:8px 10px; background:#f6f8fb; border-radius:6px; font-size:11px; color:var(--sub);">
+        💡 <strong>KB 이민혁</strong>: 지난 1년 달러/원 +13.9% vs DXY +4.4%. 9.5%p 초과 원화 약세는 수급 불균형(연금·서학개미) 반영 — 이제는 수급이 하락 변수로 전환될 수 있는 시점.
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-title">📌 금일 핵심 이슈 — 상반기 마지막 날, 큰 거 하나 온다</div>
+    <div class="insight-body">
+      <strong>분기말 수급 충돌</strong>: 외국인 리밸런싱 달러 매수(↑) ↔ 반기말 수출 네고 + SK하이닉스 ADR 달러 공급(↓). 카타르 미·이란 회담 협상 실질 진전 가능성 낮음 — 글로벌 이벤트 부재 속 외국인 코스피 매도세 반전 어려워 <strong>환율 하락 기대 제한적</strong>. 다만 당국 종가관리 실개입 여부가 최대 변수.
+    </div>
+  </div>
+</div>
+
+<!-- ─── TAB 2: 글로벌동향 ─── -->
+<div class="tab-content" id="tab-global">
+  <div class="grid-2" style="margin-bottom:14px;">
+    <div class="card">
+      <div class="card-title">글로벌 증시</div>
+      <div class="chart-wrap">
+        <canvas id="stockChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">증시 상세</div>
+      <table>
+        <thead><tr><th>지수</th><th class="num">종가</th><th class="num">전일비</th><th class="num">%</th></tr></thead>
+        <tbody>
+          <tr><td>나스닥</td><td class="num">25,820</td><td class="num up-text">+524</td><td class="num up-text">+2.07%</td></tr>
+          <tr><td>S&P 500</td><td class="num">7,440</td><td class="num up-text">+87</td><td class="num up-text">+1.18%</td></tr>
+          <tr><td>미국 DOW</td><td class="num">52,183</td><td class="num up-text">+307</td><td class="num up-text">+0.59%</td></tr>
+          <tr><td>일본 Nikkei</td><td class="num">69,468</td><td class="num up-text">+107</td><td class="num up-text">+0.15%</td></tr>
+          <tr><td>중국 상해</td><td class="num">4,074</td><td class="num up-text">+47</td><td class="num up-text">+1.16%</td></tr>
+          <tr><td>홍콩 항셍</td><td class="num">23,027</td><td class="num up-text">+357</td><td class="num up-text">+1.57%</td></tr>
+          <tr><td>독일 DAX</td><td class="num">24,627</td><td class="num dn-text">-44</td><td class="num dn-text">-0.18%</td></tr>
+          <tr><td>KOSPI</td><td class="num">8,394.7</td><td class="num dn-text">-16.6</td><td class="num dn-text">-0.20%</td></tr>
+          <tr><td>영국 FTSE</td><td class="num">10,484</td><td class="num dn-text">-23.8</td><td class="num dn-text">-0.23%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">원자재</div>
+      <table>
+        <thead><tr><th>항목</th><th class="num">종가</th><th class="num">전일비</th></tr></thead>
+        <tbody>
+          <tr><td>WTI 선물</td><td class="num">$70.75</td><td class="num up-text">+2.20%</td></tr>
+          <tr><td>금 선물</td><td class="num">$4,039</td><td class="num dn-text">-1.40%</td></tr>
+          <tr><td>은 선물</td><td class="num">$58.2</td><td class="num dn-text">-1.77%</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px;font-size:11px;color:var(--sub);line-height:1.5;">
+        유가: 중동 긴장 반등 후 협상 재개에 상단 제한. 금: 위험선호 회복으로 하락.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">KOSPI 수급 (십억원)</div>
+      <table>
+        <thead><tr><th>주체</th><th class="num">순매도/매수</th></tr></thead>
+        <tbody>
+          <tr><td>외국인</td><td class="num dn-text">-7,733.2</td></tr>
+          <tr><td>개인</td><td class="num up-text">+4,597.5</td></tr>
+          <tr><td>기관</td><td class="num up-text">+2,932.7</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px;font-size:11px;color:var(--sub);">외국인 매도세 지속 → 달러 수요 압력 유지</div>
+    </div>
+    <div class="card">
+      <div class="card-title">중동 지정학 리스크</div>
+      <div style="font-size:12px;line-height:1.7;color:var(--text);">
+        <div style="padding:6px 0;border-bottom:1px dashed #eee;">
+          🔴 <strong>주말</strong>: 호르무즈 인근 미·이란 산발적 군사 충돌 — 지정학 위기 일시 고조
+        </div>
+        <div style="padding:6px 0;border-bottom:1px dashed #eee;">
+          🟢 <strong>결과</strong>: 양국 추가 군사 행동 즉각 중단 선언
+        </div>
+        <div style="padding:6px 0;border-bottom:1px dashed #eee;">
+          🟡 <strong>카타르</strong>: 평화협정 이행 협상 재개 합의 — 실질 진전 기대는 낮음
+        </div>
+        <div style="padding:6px 0;">
+          💡 유가 상승 제한·달러 약세 주도, 원화에는 중립~소폭 긍정
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TAB 3: 금리·파생 ─── -->
+<div class="tab-content" id="tab-rates">
+  <div class="grid-2" style="margin-bottom:14px;">
+    <div class="card">
+      <div class="card-title">원화 IRS / CRS 커브</div>
+      <div class="chart-wrap-md">
+        <canvas id="irsChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">IRS / CRS 상세</div>
+      <table>
+        <thead><tr><th>만기</th><th class="num">IRS</th><th class="num">전일비</th><th class="num">CRS</th><th class="num">전일비</th></tr></thead>
+        <tbody>
+          <tr><td>1Y</td><td class="num">3.455%</td><td class="num neutral-text">0.000</td><td class="num">3.005%</td><td class="num up-text">+0.025</td></tr>
+          <tr><td>2Y</td><td class="num">3.745%</td><td class="num up-text">+0.017</td><td class="num">3.190%</td><td class="num dn-text">-0.020</td></tr>
+          <tr><td>3Y</td><td class="num">3.828%</td><td class="num up-text">+0.015</td><td class="num">3.245%</td><td class="num up-text">+0.005</td></tr>
+          <tr><td>5Y</td><td class="num">3.905%</td><td class="num up-text">+0.018</td><td class="num">3.400%</td><td class="num up-text">+0.040</td></tr>
+          <tr><td>7Y</td><td class="num">3.956%</td><td class="num up-text">+0.016</td><td class="num">3.490%</td><td class="num up-text">+0.050</td></tr>
+          <tr><td>10Y</td><td class="num">4.000%</td><td class="num up-text">+0.023</td><td class="num">3.390%</td><td class="num up-text">+0.050</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px;font-size:11px;color:var(--sub);line-height:1.5;">
+        IRS 전 구간 소폭 상승. CRS 중장기물 강세(+4~5bp) — 국내 채권 및 스왑 수요 반영.
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">FX 스왑포인트</div>
+      <table>
+        <thead><tr><th>만기</th><th class="num">스왑포인트</th><th class="num">전일비</th><th class="num">Implied CRS</th></tr></thead>
+        <tbody>
+          <tr><td>1M</td><td class="num dn-text">-0.75원</td><td class="num dn-text">-0.20</td><td class="num">3.09%</td></tr>
+          <tr><td>2M</td><td class="num dn-text">-1.65원</td><td class="num up-text">+0.10</td><td class="num">—</td></tr>
+          <tr><td>3M</td><td class="num dn-text">-2.80원</td><td class="num neutral-text">0.00</td><td class="num">2.98%</td></tr>
+          <tr><td>6M</td><td class="num dn-text">-7.30원</td><td class="num dn-text">-0.50</td><td class="num">2.96%</td></tr>
+          <tr><td>1Y</td><td class="num dn-text">-14.80원</td><td class="num up-text">+0.20</td><td class="num">3.06%</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px;padding:8px;background:var(--red-light);border-radius:6px;font-size:11px;color:#7a2020;">
+        ⚡ 6M 스왑포인트 -0.50원 확대 주목. 단기 달러 유동성 타이트 신호.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">국내·미국 채권금리</div>
+      <table>
+        <thead><tr><th>구분</th><th class="num">한국(%)</th><th class="num">전일비(bp)</th><th class="num">미국(%)</th><th class="num">전일비(bp)</th></tr></thead>
+        <tbody>
+          <tr><td>1Y</td><td class="num">3.30</td><td class="num up-text">+1.0</td><td class="num">3.95</td><td class="num up-text">+0.5</td></tr>
+          <tr><td>2Y</td><td class="num">—</td><td class="num">—</td><td class="num">4.10</td><td class="num up-text">+1.5</td></tr>
+          <tr><td>3Y</td><td class="num">3.73</td><td class="num up-text">+1.1</td><td class="num">4.11</td><td class="num dn-text">-1.4</td></tr>
+          <tr><td>10Y</td><td class="num">4.14</td><td class="num up-text">+2.7</td><td class="num">4.37</td><td class="num up-text">+0.5</td></tr>
+          <tr><td>30Y</td><td class="num">4.38</td><td class="num up-text">+4.0</td><td class="num">4.87</td><td class="num dn-text">-0.1</td></tr>
+          <tr><td>CD 3M</td><td class="num">2.92</td><td class="num neutral-text">0.0</td><td class="num">3.775</td><td class="num up-text">+2.1</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px;font-size:11px;color:var(--sub);">
+        한국 국고채 장기물 중심 금리 상승. KOR 5Y CDS 22.23 (-0.52bp) — 신용 개선.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TAB 4: 시나리오 ─── -->
+<div class="tab-content" id="tab-scenario">
+  <div style="margin-bottom:14px;">
+    <div class="card-title" style="font-size:12px;padding:0 0 8px;border-bottom:1px solid var(--border);margin-bottom:12px;">
+      금일 달러/원 시나리오 분석 (2026.06.30)
+    </div>
+    <div class="scenario-row">
+      <div class="scenario-card base">
+        <div class="sc-label">Base</div>
+        <div class="sc-range" style="color:var(--blue);">1,536~1,546원</div>
+        <div class="sc-prob">확률 55% · 신한 전망</div>
+        <div class="sc-desc">
+          · 분기말 수출 네고와 외국인 리밸런싱 매수가 균형<br>
+          · 달러 약세에도 엔화 162엔 근접으로 원화 압박<br>
+          · 당국 스무딩 개입으로 변동성 제한<br>
+          · 카타르 협상 실질 진전 없음
+        </div>
+      </div>
+      <div class="scenario-card bull">
+        <div class="sc-label">Bull (원화강세)</div>
+        <div class="sc-range" style="color:var(--green);">1,530~1,538원</div>
+        <div class="sc-prob">확률 20%</div>
+        <div class="sc-desc">
+          · SK하이닉스 ADR 대규모 달러 공급 현실화<br>
+          · 반기말 대규모 수출 네고 집중<br>
+          · 당국 적극 종가관리 실개입<br>
+          · 중동 완전 긴장 해소로 위험선호 급등
+        </div>
+      </div>
+      <div class="scenario-card bear">
+        <div class="sc-label">Bear (원화약세)</div>
+        <div class="sc-range" style="color:var(--red);">1,546~1,555원</div>
+        <div class="sc-prob">확률 25%</div>
+        <div class="sc-desc">
+          · 외국인 코스피 매도 가속·커스터디 달러 수요 급증<br>
+          · 엔화 162엔 돌파 → 원화 동반 추가 약세<br>
+          · 중동 재긴장으로 유가 급등<br>
+          · 미 CB 소비자신뢰지수 충격 하회
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">수급 요인 영향도</div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:10px;">방향(↑상방/↓하방) · 강도</div>
+      <div class="factor-row">
+        <span class="factor-dir"><span class="flow-badge flow-buy">↑ 매수</span></span>
+        <span style="flex:1;font-size:12px;">외국인 리밸런싱 커스터디 달러</span>
+        <div class="factor-bar" style="width:80px;"><div class="factor-fill" style="width:80%;background:var(--red);"></div></div>
+        <span style="font-size:10px;color:var(--sub);width:30px;text-align:right;">강함</span>
+      </div>
+      <div class="factor-row">
+        <span class="factor-dir"><span class="flow-badge flow-sell">↓ 매도</span></span>
+        <span style="flex:1;font-size:12px;">반기말 수출 네고</span>
+        <div class="factor-bar" style="width:80px;"><div class="factor-fill" style="width:70%;background:var(--blue);"></div></div>
+        <span style="font-size:10px;color:var(--sub);width:30px;text-align:right;">강함</span>
+      </div>
+      <div class="factor-row">
+        <span class="factor-dir"><span class="flow-badge flow-sell">↓ 공급</span></span>
+        <span style="flex:1;font-size:12px;">SK하이닉스 ADR 자금</span>
+        <div class="factor-bar" style="width:80px;"><div class="factor-fill" style="width:90%;background:var(--green);"></div></div>
+        <span style="font-size:10px;color:var(--sub);width:30px;text-align:right;">초대형</span>
+      </div>
+      <div class="factor-row">
+        <span class="factor-dir"><span class="flow-badge flow-buy">↑ 매수</span></span>
+        <span style="flex:1;font-size:12px;">엔화 약세 동조화</span>
+        <div class="factor-bar" style="width:80px;"><div class="factor-fill" style="width:55%;background:var(--red);"></div></div>
+        <span style="font-size:10px;color:var(--sub);width:30px;text-align:right;">중간</span>
+      </div>
+      <div class="factor-row">
+        <span class="factor-dir"><span class="flow-badge flow-sell">↓ 완화</span></span>
+        <span style="flex:1;font-size:12px;">중동 긴장 완화</span>
+        <div class="factor-bar" style="width:80px;"><div class="factor-fill" style="width:40%;background:var(--blue);"></div></div>
+        <span style="font-size:10px;color:var(--sub);width:30px;text-align:right;">중간</span>
+      </div>
+      <div class="factor-row">
+        <span class="factor-dir"><span class="flow-badge flow-watch">👁 개입</span></span>
+        <span style="flex:1;font-size:12px;">당국 종가관리 실개입</span>
+        <div class="factor-bar" style="width:80px;"><div class="factor-fill" style="width:60%;background:var(--orange);"></div></div>
+        <span style="font-size:10px;color:var(--sub);width:30px;text-align:right;">주목</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">KB 마켓 이슈 분석</div>
+      <div style="font-size:12px;line-height:1.75;color:var(--text);">
+        <div style="padding:8px 10px;background:var(--blue-light);border-radius:6px;margin-bottom:10px;">
+          <strong style="color:var(--blue);">핵심 명제</strong>: 지난 1년 달러/원 +13.9% vs DXY +4.4%<br>
+          → 9.5%p 초과 원화 약세 = 구조적 달러 수요 우위
+        </div>
+        <div style="margin-bottom:8px;"><strong>① 2025 하반기~2026 초:</strong> 국민연금·서학개미 해외주식 투자 확대 → 달러 수요 급증</div>
+        <div style="margin-bottom:8px;"><strong>② 2026년 2월 이후:</strong> 외국인 주식 순매도 → 역내 추가 달러 수요 압력</div>
+        <div style="padding:8px 10px;background:var(--green-light);border-radius:6px;">
+          <strong style="color:var(--green);">전환 시그널 등장</strong><br>
+          · 개인 해외투자 속도 둔화<br>
+          · 대규모 무역흑자 지속<br>
+          · SK하이닉스 ADR 초대형 달러 공급<br>
+          → 외국인 매도만 진정되면 수급이 환율 <strong>하락</strong>의 핵심 변수
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TAB 5: 참여주체전략 ─── -->
+<div class="tab-content" id="tab-participants">
+  <div class="section-title">시장 참여주체별 전략 및 행태</div>
+
+  <div class="grid-2">
+    <div>
+      <div class="participant" style="border-left-color:var(--red);">
+        <div class="p-title" style="color:var(--red);">🏭 수출업체 (네고/결제)</div>
+        <div class="p-body">
+          <span class="flow-badge flow-sell">↓ 네고</span> 반기말·분기말 수출 네고 <strong>집중 출회</strong> 예상. 1,545원 상단에서 적극 매도. 하이닉스·삼성 국내투자 발표로 외화 국내 전환 유인 확대. 1,540~1,545원 구간 네고 물량 대기 추정.
+        </div>
+      </div>
+      <div class="participant" style="border-left-color:var(--orange);">
+        <div class="p-title" style="color:var(--orange);">🏦 외국인 기관 (커스터디)</div>
+        <div class="p-body">
+          <span class="flow-badge flow-buy">↑ 매수</span> 분기말 리밸런싱에 따른 <strong>커스터디 달러 매수</strong>가 환율 상방 자극. KOSPI 순매도(-7,733억원) 지속으로 달러 수요 지속. 단, SK하이닉스 ADR 달러 공급이 상쇄 변수.
+        </div>
+      </div>
+      <div class="participant" style="border-left-color:#9b59b6;">
+        <div class="p-title" style="color:#9b59b6;">🇯🇵 일본 BOJ / 엔화</div>
+        <div class="p-body">
+          <span class="flow-badge flow-buy">↑ 압박</span> USD/JPY 161.94엔 — 162엔 근접으로 일본 외환당국 <strong>실개입 경계 한층 고조</strong>. 엔화 추가 약세 시 원화 동반 약세 압력. 미일 금리차 지속이 구조적 엔 약세 요인.
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="participant" style="border-left-color:var(--green);">
+        <div class="p-title" style="color:var(--green);">🏛️ 외환당국 (스무딩 개입)</div>
+        <div class="p-body">
+          <span class="flow-badge flow-watch">👁 주시</span> 1,545원 상단에서 외환당국 경계 작동 — 추가 상승 차단. <strong>종가관리성 실개입</strong> 여부가 금일 최대 정책 변수. 전일 1,545.2원 종가 관리 시사. 정규장 마감 전 개입 가능성 주목.
+        </div>
+      </div>
+      <div class="participant" style="border-left-color:var(--blue);">
+        <div class="p-title" style="color:var(--blue);">💼 국민연금 / 서학개미</div>
+        <div class="p-body">
+          <span class="flow-badge flow-sell">↓ 둔화</span> 개인 해외투자(서학개미) 속도 <strong>둔화</strong> 신호. 국민연금 해외투자 확대 속도 조정. 달러 수요 압력 감소 — 중장기 환율 하락 지지 요인으로 전환 가능.
+        </div>
+      </div>
+      <div class="participant" style="border-left-color:#e67e22;">
+        <div class="p-title" style="color:#e67e22;">🔬 SK하이닉스 (ADR 특수)</div>
+        <div class="p-body">
+          <span class="flow-badge flow-sell">↓ 공급</span> ADR 자금 유입에 따른 <strong>초대형 달러 공급</strong> 변수 등장. KB 이민혁 분석에서 수급 전환의 핵심 촉매로 주목. 구체적 규모·시기 확인 필요 — 실현 시 환율 하방 압력 강화.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:14px;" class="card">
+    <div class="card-title">신한 김서재 FX Insight — 국가자본주의, 트렌드가 될까?</div>
+    <div style="font-size:12px;line-height:1.75;color:var(--text);">
+      <p style="margin-bottom:8px;">원화는 미 연준 급격 금리인상 시기부터 약세를 보였고, 미국 예외주의·트럼프 관세·이란 공습 인플레이션 우려 등에 약세가 심화. 현재 1,500원 수준은 '달러 부족'이 아닌 <strong>구조적 해외투자 확대(고령화·낮은 생산성·무역 장벽)</strong>가 원인.</p>
+      <p style="margin-bottom:8px;">정부의 <strong>3대 메가프로젝트</strong>(반도체·피지컬AI·데이터센터) 발표 + 하이닉스·삼성 국내투자 계획 → 전일 환율 1,535.1원까지 급락. 정책 모멘텀의 환율 영향력 실증.</p>
+      <p>다만 정부주도 발전의 비합리성도 존재. <strong>국가 자본주의가 잠재성장률을 실질적으로 개선하고 원화 환율 하락을 가져올 수 있을지 중장기 모니터링 필요.</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TAB 6: 경제캘린더 ─── -->
+<div class="tab-content" id="tab-calendar">
+  <div class="grid-2">
+    <div>
+      <div class="cal-day">
+        <div class="cal-day-title">📅 전일 (6/29) — 주요 결과</div>
+        <div class="cal-item">
+          <span class="cal-time">08:50</span>
+          <span class="cal-desc">🇯🇵 일본 5월 소매판매 전년비 +5.3% <span class="cal-imp">★</span> <span class="cal-act act-beat">상회</span></span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">18:00</span>
+          <span class="cal-desc">🇪🇺 유로 6월 소비신뢰지수 -17.7 <span class="cal-imp">★</span> <span class="cal-act act-match">부합</span></span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">23:30</span>
+          <span class="cal-desc">🇺🇸 댈러스 연은 제조업 0.0 <span class="cal-imp">★</span> <span class="cal-act act-miss">하회</span></span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">01:35</span>
+          <span class="cal-desc">🇺🇸 바킨 리치몬드 연은 총재 연설</span>
+        </div>
+      </div>
+
+      <div class="cal-day">
+        <div class="cal-day-title">📅 금일 (6/30) — 주요 예정</div>
+        <div class="cal-item">
+          <span class="cal-time">08:00</span>
+          <span class="cal-desc">🇰🇷 한국 5월 산업생산 전년비 (예 3.6%) <span class="cal-imp">★</span></span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">10:30</span>
+          <span class="cal-desc">🇨🇳 중국 6월 제조업 PMI (예 50.1) <span class="cal-imp">★★</span></span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">15:00</span>
+          <span class="cal-desc">🇬🇧 영국 1분기 실질GDP 전기비 최종 (예 0.6%) <span class="cal-imp">★★</span></span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">23:00</span>
+          <span class="cal-desc">🇺🇸 미국 6월 CB 소비자신뢰지수 (예 94.4) <span class="cal-imp">★★★</span></span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">23:00</span>
+          <span class="cal-desc">🇺🇸 미국 5월 JOLTS 구인건수 (예 7,296k) <span class="cal-imp">★★★</span></span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">02:30</span>
+          <span class="cal-desc">🇪🇺 라가르드 ECB 총재 연설</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="cal-day">
+        <div class="cal-day-title" style="background:var(--red-light);color:var(--red);">📅 익일 (7/1) — 핵심 일정</div>
+        <div class="cal-item">
+          <span class="cal-time">08:50</span>
+          <span class="cal-desc">🇯🇵 일본 2분기 탄칸 제조업 (예 16) <span class="cal-imp">★★</span></span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">09:00</span>
+          <span class="cal-desc">🇰🇷 한국 6월 통관수출 전년비 (예 60.9) <span class="cal-imp">★★★</span> ← 핵심 주목</span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">18:00</span>
+          <span class="cal-desc">🇪🇺 유로존 6월 소비자물가 전년비 (예 3.0%) <span class="cal-imp">★★★</span></span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">21:15</span>
+          <span class="cal-desc">🇺🇸 미국 6월 ADP 민간고용 (예 120k) <span class="cal-imp">★★★</span></span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">22:00</span>
+          <span class="cal-desc">🇺🇸 케빈 워시 연준 의장 발언 <span class="cal-imp">★★★</span> ← 최대 주목</span>
+        </div>
+        <div class="cal-item">
+          <span class="cal-time">23:00</span>
+          <span class="cal-desc">🇺🇸 미국 6월 ISM 제조업 (예 53.8) <span class="cal-imp">★★★</span></span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title">금일 전망 요약</div>
+        <table>
+          <thead><tr><th>통화쌍</th><th class="num">전망 저점</th><th class="num">전망 고점</th><th class="num">전일 종가</th></tr></thead>
+          <tbody>
+            <tr><td><strong>달러/원</strong></td><td class="num">1,530~1,536</td><td class="num">1,546~1,550</td><td class="num">1,545.2</td></tr>
+            <tr><td>달러/엔</td><td class="num">161.6</td><td class="num">162.1</td><td class="num">161.94</td></tr>
+            <tr><td>유로/달러</td><td class="num">1.141</td><td class="num">1.147</td><td class="num">1.1422</td></tr>
+            <tr><td>유로/원</td><td class="num">1,750</td><td class="num">1,770</td><td class="num">1,761.2</td></tr>
+            <tr><td>엔/원(100엔)</td><td class="num">945</td><td class="num">955</td><td class="num">954.7</td></tr>
+            <tr><td>위안/원</td><td class="num">226.0</td><td class="num">227.0</td><td class="num">227.5</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// TICKER
+const tickerData = [
+  { label:'USD/KRW', val:'1,545.2', chg:'+13.2', up:true },
+  { label:'NDF 1M', val:'1,540.30', chg:'-4.15', up:false },
+  { label:'DXY', val:'101.13', chg:'-0.24%', up:false },
+  { label:'USD/JPY', val:'161.94', chg:'+0.10', up:true },
+  { label:'EUR/USD', val:'1.1422', chg:'+0.0038', up:true },
+  { label:'나스닥', val:'25,820', chg:'+2.07%', up:true },
+  { label:'S&P 500', val:'7,440', chg:'+1.18%', up:true },
+  { label:'KOSPI', val:'8,394.7', chg:'-0.20%', up:false },
+  { label:'WTI', val:'$70.75', chg:'+2.20%', up:true },
+  { label:'금', val:'$4,038.9', chg:'-1.40%', up:false },
+  { label:'KOR CDS 5Y', val:'22.23', chg:'-0.52bp', up:false },
+  { label:'IRS 5Y', val:'3.905%', chg:'+0.018', up:true },
+  { label:'CRS 5Y', val:'3.400%', chg:'+0.040', up:true },
+];
+const track = document.getElementById('tickerTrack');
+const html = tickerData.map(d =>
+  `<span class="ticker-item"><span class="label">${d.label}</span><span class="val">${d.val}</span><span class="${d.up?'up':'dn'}">${d.up?'▲':'▼'} ${d.chg}</span></span>`
+).join('');
+track.innerHTML = html + html;
+
+// TABS
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+  });
+});
+
+// STOCK CHART
+new Chart(document.getElementById('stockChart'), {
+  type: 'bar',
+  data: {
+    labels: ['나스닥', 'S&P 500', 'DOW', 'Nikkei', '상해', '항셍', 'DAX', 'KOSPI', 'FTSE'],
+    datasets: [{
+      data: [2.07, 1.18, 0.59, 0.15, 1.16, 1.57, -0.18, -0.20, -0.23],
+      backgroundColor: [2.07, 1.18, 0.59, 0.15, 1.16, 1.57, -0.18, -0.20, -0.23].map(v => v >= 0 ? '#e34948' : '#185fa5'),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { ticks: { font: {size:10}, callback: v => v+'%' }, grid: { color:'#f0f2f5' } },
+      x: { ticks: { font: {size:10} }, grid: { display: false } }
+    }
+  }
+});
+
+// IRS/CRS CHART
+const tenors = ['1Y','2Y','3Y','4Y','5Y','7Y','10Y'];
+const irsData = [3.455, 3.745, 3.828, 3.886, 3.905, 3.956, 4.000];
+const crsData = [3.005, 3.190, 3.245, 3.330, 3.400, 3.490, 3.390];
+new Chart(document.getElementById('irsChart'), {
+  type: 'line',
+  data: {
+    labels: tenors,
+    datasets: [
+      { label:'IRS', data: irsData, borderColor:'#185fa5', backgroundColor:'rgba(24,95,165,0.08)', borderWidth:2, pointRadius:4, tension:0.3 },
+      { label:'CRS', data: crsData, borderColor:'#1baf7a', backgroundColor:'rgba(27,175,122,0.08)', borderWidth:2, pointRadius:4, tension:0.3 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { font: {size:11} } } },
+    scales: {
+      y: { min: 2.8, max: 4.2, ticks: { font:{size:10}, callback: v => v+'%' }, grid: { color:'#f0f2f5' } },
+      x: { ticks: { font:{size:10} }, grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>
