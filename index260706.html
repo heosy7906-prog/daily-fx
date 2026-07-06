@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily FX Market Report — 2026.07.06</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f8f9fa;
+    --card:#ffffff;
+    --blue:#185fa5;
+    --red:#e34948;
+    --green:#1baf7a;
+    --text:#222831;
+    --sub:#6b7280;
+    --border:#e5e8eb;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:16px;}
+
+  /* Header */
+  .header{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    padding:14px 4px 10px;
+  }
+  .header h1{font-size:20px;margin:0;color:var(--blue);}
+  .header .date{font-size:13px;color:var(--sub);}
+
+  /* Ticker bar */
+  .ticker-bar{
+    display:flex;overflow-x:auto;gap:0;
+    background:#0f2540;
+    border-radius:10px;
+    margin-bottom:12px;
+  }
+  .ticker-item{
+    flex:1 0 auto;
+    padding:12px 18px;
+    color:#fff;
+    border-right:1px solid rgba(255,255,255,0.12);
+    min-width:130px;
+  }
+  .ticker-item:last-child{border-right:none;}
+  .ticker-item .label{font-size:11px;color:#9fb4cc;margin-bottom:2px;}
+  .ticker-item .value{font-size:16px;font-weight:700;}
+  .ticker-item .chg{font-size:12px;font-weight:600;margin-left:4px;}
+  .up{color:#ff6b6b;}
+  .down{color:#4dabf7;}
+  .flat{color:#c8d3de;}
+
+  /* Alert banner */
+  .alert{
+    background:#fff4e5;
+    border:1px solid #f0c987;
+    border-left:5px solid #e08e0b;
+    border-radius:8px;
+    padding:12px 16px;
+    margin-bottom:16px;
+    font-size:13.5px;
+    line-height:1.6;
+  }
+  .alert b{color:#b9600a;}
+
+  /* Tabs */
+  .tabs{
+    display:flex;
+    gap:4px;
+    border-bottom:2px solid var(--border);
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .tab-btn{
+    background:none;border:none;
+    padding:10px 16px;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--sub);
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+    transition:all .15s;
+  }
+  .tab-btn:hover{color:var(--blue);}
+  .tab-btn.active{color:var(--blue);border-bottom:3px solid var(--blue);}
+
+  .tab-content{display:none;}
+  .tab-content.active{display:block;animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  /* Cards */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media(max-width:760px){.grid,.grid-3{grid-template-columns:1fr;}}
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px;
+  }
+  .card h3{
+    margin:0 0 10px;
+    font-size:14px;
+    color:var(--blue);
+    display:flex;align-items:center;gap:6px;
+  }
+  .card h3::before{
+    content:"";
+    width:4px;height:14px;background:var(--blue);border-radius:2px;
+  }
+  .card p{font-size:13px;line-height:1.7;color:var(--text);margin:6px 0;}
+  .card .src{font-size:11px;color:var(--sub);margin-top:8px;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th,td{padding:7px 8px;border-bottom:1px solid var(--border);text-align:center;}
+  th{background:#f1f4f7;color:var(--sub);font-weight:600;}
+  td.name{text-align:left;color:var(--text);font-weight:500;}
+  .pos{color:var(--red);font-weight:600;}
+  .neg{color:var(--blue);font-weight:600;}
+
+  .range-box{
+    display:flex;justify-content:space-between;align-items:center;
+    background:linear-gradient(90deg,#eaf2fa,#f8f9fa);
+    border-radius:8px;padding:14px 18px;margin-bottom:14px;
+  }
+  .range-box .rng{font-size:22px;font-weight:800;color:var(--blue);}
+  .range-box .lbl{font-size:12px;color:var(--sub);}
+
+  .badge{
+    display:inline-block;padding:2px 8px;border-radius:12px;
+    font-size:11px;font-weight:700;color:#fff;margin-left:6px;
+  }
+  .badge.kb{background:var(--blue);}
+  .badge.sh{background:#8a5a2c;}
+
+  .strategy-item{
+    display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);
+  }
+  .strategy-item:last-child{border-bottom:none;}
+  .strategy-item .tag{
+    flex:0 0 90px;font-weight:700;font-size:12.5px;color:var(--blue);
+  }
+  .strategy-item .desc{font-size:13px;line-height:1.6;}
+
+  .calendar-day{margin-bottom:14px;}
+  .calendar-day h4{font-size:13px;margin:0 0 6px;color:var(--sub);}
+
+  canvas{max-height:280px;}
+  .footer-note{font-size:11px;color:var(--sub);text-align:center;margin-top:24px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <h1>Daily FX Market Report</h1>
+    <div class="date">2026년 7월 6일 (월) · KB국민은행 · 신한은행 S&amp;T센터 종합</div>
+  </div>
+
+  <!-- Ticker -->
+  <div class="ticker-bar">
+    <div class="ticker-item"><div class="label">USD/KRW</div><div class="value">1,525.60 <span class="chg down">▼30.20</span></div></div>
+    <div class="ticker-item"><div class="label">USD/JPY</div><div class="value">161.34 <span class="chg up">▲0.23</span></div></div>
+    <div class="ticker-item"><div class="label">EUR/USD</div><div class="value">1.1437 <span class="chg up">▲0.0005</span></div></div>
+    <div class="ticker-item"><div class="label">DXY</div><div class="value">100.87 <span class="chg flat">0.00</span></div></div>
+    <div class="ticker-item"><div class="label">WTI</div><div class="value">$68.69 <span class="chg up">▲0.11</span></div></div>
+    <div class="ticker-item"><div class="label">KOSPI</div><div class="value">8,088.34 <span class="chg up">▲5.76%</span></div></div>
+  </div>
+
+  <div class="range-box">
+    <div>
+      <div class="lbl">금일 KB 전망 레인지</div>
+      <div class="rng">1,520 ~ 1,535원</div>
+    </div>
+    <div>
+      <div class="lbl">신한 금주 전망 레인지</div>
+      <div class="rng">1,520 ~ 1,550원</div>
+    </div>
+  </div>
+
+  <div class="alert">
+    ⚠️ <b>일본 당국 실개입 추정 + 엔-원 동조화 심화(상관계수 0.95).</b>
+    전일 달러/엔이 장중 160.49엔까지 급락하며 개입 정황 포착, 원화도 동반 강세 전환 후 1,525.6원 마감.
+    미국 6월 고용 둔화로 Fed 7월 동결 확률 80%까지 상승. 반도체·AI 관련주 변동성은 상방 리스크 요인.
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview">시장개요</button>
+    <button class="tab-btn" data-tab="global">글로벌동향</button>
+    <button class="tab-btn" data-tab="rates">금리·파생</button>
+    <button class="tab-btn" data-tab="scenario">시나리오</button>
+    <button class="tab-btn" data-tab="strategy">참여주체전략</button>
+    <button class="tab-btn" data-tab="calendar">경제캘린더</button>
+  </div>
+
+  <!-- 시장개요 -->
+  <div class="tab-content active" id="overview">
+    <div class="grid">
+      <div class="card">
+        <h3>달러/원 전일 동향 <span class="badge kb">KB</span></h3>
+        <p>미국 고용지표 둔화에 따른 역외 달러 약세로 1,544.5원 하락 개장. 외국인 주식 순매도 부담에도 일본·한국 당국의 개입 추정 움직임에 원화 동조 강세.</p>
+        <p>전일 대비 <b class="neg">-30.2원</b> 하락한 <b>1,525.6원</b> 정규장 마감. 야간장은 저가매수 유입되며 1,530.0원 반등.</p>
+        <table>
+          <tr><th>구분</th><th>시가</th><th>고가</th><th>저가</th><th>종가</th><th>전일비</th></tr>
+          <tr><td class="name">달러/원</td><td>1,544.5</td><td>1,548.9</td><td>1,525.1</td><td>1,525.6</td><td class="neg">-30.2</td></tr>
+          <tr><td class="name">달러/원(야간)</td><td>1,544.5</td><td>1,548.9</td><td>1,525.1</td><td>1,530.0</td><td class="neg">-25.8</td></tr>
+        </table>
+        <div class="src">자료: Infomax, KB국민은행</div>
+      </div>
+      <div class="card">
+        <h3>국내 증시·수급 동향</h3>
+        <p>KOSPI는 외국인 순매도(-2,175억원)에도 개인·기관 매수세 유입되며 <b class="pos">+5.76%</b> 급등한 8,088.34pt 마감.</p>
+        <table>
+          <tr><th>구분</th><th>종가</th><th>등락률</th><th>외국인</th><th>개인</th><th>기관계</th></tr>
+          <tr><td class="name">KOSPI</td><td>8,088.3</td><td class="pos">+5.76%</td><td class="neg">-2,175.0</td><td class="neg">-2,294.2</td><td class="pos">+4,407.9</td></tr>
+          <tr><td class="name">KOSDAQ</td><td>868.4</td><td class="pos">+0.19%</td><td class="neg">-20.2</td><td class="pos">+107.5</td><td class="neg">-103.7</td></tr>
+        </table>
+        <div class="src">단위: 십억원 · 자료: Infomax</div>
+      </div>
+      <div class="card">
+        <h3>주요 통화 환율 (원화 기준)</h3>
+        <table>
+          <tr><th>통화</th><th>환율</th><th>전일비</th></tr>
+          <tr><td class="name">JPY/KRW (100엔)</td><td>947.6</td><td class="neg">-11.3</td></tr>
+          <tr><td class="name">EUR/KRW</td><td>1,747.5</td><td class="neg">-24.4</td></tr>
+          <tr><td class="name">GBP/KRW</td><td>2,042.11</td><td class="neg">-9.93</td></tr>
+          <tr><td class="name">CNY/KRW (위안)</td><td>225.3</td><td class="neg">-4.0</td></tr>
+        </table>
+        <div class="src">자료: Infomax, 신한은행 S&T센터</div>
+      </div>
+      <div class="card">
+        <h3>NDF · 스왑포인트</h3>
+        <table>
+          <tr><th>항목</th><th>값</th><th>전일비</th></tr>
+          <tr><td class="name">NDF 1M (원)</td><td>1,526.65</td><td class="pos">+2.10</td></tr>
+          <tr><td class="name">1M 스왑포인트</td><td>-1.05</td><td>-0.10</td></tr>
+          <tr><td class="name">3M 스왑포인트</td><td>-3.20</td><td>-0.15</td></tr>
+          <tr><td class="name">1Y 스왑포인트</td><td>-14.60</td><td>+0.40</td></tr>
+        </table>
+        <div class="src">자료: Infomax, KB국민은행</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 글로벌동향 -->
+  <div class="tab-content" id="global">
+    <div class="grid">
+      <div class="card">
+        <h3>미국 고용 둔화 &amp; Fed 기대 변화 <span class="badge kb">KB</span></h3>
+        <p>6월 비농업 고용이 예상치 하회, 이전치도 하향 조정. FedWatch 기준 <b>7월 동결 확률 70%→80%</b> 상승, <b>9월 인상 확률 60%→55%</b>로 하락.</p>
+        <p>DXY는 미 독립기념일 휴장 속 100.78~100.87pt 보합권 등락.</p>
+      </div>
+      <div class="card">
+        <h3>일본 외환당국 실개입 추정 <span class="badge kb">KB</span></h3>
+        <p>달러/엔 장중 160.49엔까지 급락 후 161엔대 반등. 당국은 공식 인정하지 않았으나 변동성·속도 감안 시 개입 가능성 높음. 미노루 관방장관 "강한 경계심" 발언.</p>
+        <p>신한은행: 엔화 약세 정치적 비용 확대, 40년 만의 최저 수준으로 추가 개입 타이밍 저울질 중. 167엔이 개입 없을 시 적정 수준으로 추정.</p>
+      </div>
+      <div class="card">
+        <h3>중동 리스크 완화 <span class="badge sh">신한</span></h3>
+        <p>호르무즈 해협 통행량 일부 회복 및 유가(WTI 68.69달러) 하락으로 연준 통화정책에 대한 유가발 압박 경감.</p>
+      </div>
+      <div class="card">
+        <h3>글로벌 증시 동향</h3>
+        <canvas id="equityChart"></canvas>
+        <div class="src">자료: Infomax, Bloomberg (등락률 %)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 금리·파생 -->
+  <div class="tab-content" id="rates">
+    <div class="grid">
+      <div class="card" style="grid-column:1/-1;">
+        <h3>원화 IRS/CRS 커브</h3>
+        <canvas id="irsCrsChart"></canvas>
+        <div class="src">자료: Infomax, 신한은행 S&T센터 (단위: %)</div>
+      </div>
+      <div class="card">
+        <h3>기준금리 및 채권금리 (원화)</h3>
+        <table>
+          <tr><th>구분</th><th>종가</th><th>전일비</th></tr>
+          <tr><td class="name">CD 91일물</td><td>2.92</td><td>0.00</td></tr>
+          <tr><td class="name">국고채 3년</td><td>3.75</td><td>0.00</td></tr>
+          <tr><td class="name">국고채 5년</td><td>3.97</td><td class="neg">-0.01</td></tr>
+          <tr><td class="name">국고채 10년</td><td>4.20</td><td class="pos">+0.01</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>미국 금리 (국채/IRS)</h3>
+        <table>
+          <tr><th>만기</th><th>국채</th><th>IRS</th></tr>
+          <tr><td class="name">1Y</td><td>3.92</td><td>3.98</td></tr>
+          <tr><td class="name">2Y</td><td>4.14</td><td>3.98</td></tr>
+          <tr><td class="name">10Y</td><td>4.48</td><td>4.06</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 시나리오 -->
+  <div class="tab-content" id="scenario">
+    <div class="grid">
+      <div class="card">
+        <h3 style="color:var(--green);">강세 시나리오 (원화 강세, ↓방향)</h3>
+        <p>· 일본 당국 개입 지속 + BOJ 추가 금리인상 시그널 강화 → 엔화 강세 지속, 원화 동조 강세</p>
+        <p>· 미국 고용·물가 둔화 지속 → Fed 9월 인하 기대 재부각, 달러 약세</p>
+        <p>· 호르무즈 리스크 추가 완화 → 유가 하락 → 신흥국 통화 강세</p>
+        <p><b>예상 레인지: 1,510~1,525원</b></p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--red);">약세 시나리오 (원화 약세, ↑방향)</h3>
+        <p>· FOMC 의사록(7/9)에서 매파적 분위기 확인 → 금리인하 기대 후퇴, 달러 재차 강세</p>
+        <p>· 반도체·AI 관련주 변동성 확대 → 외국인 리밸런싱 매도 재개, 위험선호 약화</p>
+        <p>· 서학개미 등 구조적 해외투자 자금 유출 지속</p>
+        <p><b>예상 레인지: 1,540~1,560원</b></p>
+      </div>
+      <div class="card" style="grid-column:1/-1;">
+        <h3>중립(기본) 시나리오 — 금주 컨센서스</h3>
+        <p>KB 1,520~1,535원(금일) / 신한 1,520~1,550원(금주). 대외 여건은 원화에 우호적이나(고용 둔화, 유가 안정, 일본 개입 경계) 국내 증시 변동성과 자본유출 관성이 상단을 지지하는 <b>박스권 등락</b> 예상. FOMC 의사록과 미 CPI 관련 지표(ISM 지불가격)가 방향성의 트리거.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 참여주체전략 -->
+  <div class="tab-content" id="strategy">
+    <div class="card">
+      <h3>참여주체별 대응 전략</h3>
+      <div class="strategy-item">
+        <div class="tag">수출업체</div>
+        <div class="desc">레인지 상단(1,530원 이상) 근접 시 분할 매도 헤지 권고. 엔-원 동조화 강화 국면에서 엔화 추가 강세 시 상단 저항 재확인 가능성.</div>
+      </div>
+      <div class="strategy-item">
+        <div class="tag">수입업체</div>
+        <div class="desc">레인지 하단(1,520원대) 근접 시 분할 매수 권고. 일본 개입 지속 시 하방 경직성 완화 여지 존재.</div>
+      </div>
+      <div class="strategy-item">
+        <div class="tag">기관투자자</div>
+        <div class="desc">일본 당국 개입 강도·BOJ 정책 스탠스, FOMC 의사록(7/9) 발표 전후 변동성 확대 대비. IRS/CRS 커브 플래트닝 여부 모니터링.</div>
+      </div>
+      <div class="strategy-item">
+        <div class="tag">개인/서학개미</div>
+        <div class="desc">구조적 달러 수요(해외투자) 지속 배경 하, 단기 되돌림 시 레인지 하단 매수 접근 유효. 급격한 쏠림 매수는 지양.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 경제캘린더 -->
+  <div class="tab-content" id="calendar">
+    <div class="card">
+      <h3>금주 주요 경제지표 일정</h3>
+      <table>
+        <tr><th>일시</th><th>국가</th><th>이벤트</th><th>예상치</th><th>이전치</th><th>중요도</th></tr>
+        <tr><td>7/6 10:00</td><td class="name">호주</td><td class="name">멜버른 인플레이션 전월비</td><td>-</td><td>-0.30%</td><td>81</td></tr>
+        <tr><td>7/6 23:00</td><td class="name">미국</td><td class="name">ISM 서비스업 지수</td><td>54.2</td><td>54.5</td><td>83</td></tr>
+        <tr><td>7/7 08:30</td><td class="name">일본</td><td class="name">노동자 현금수입 (전년비)</td><td>-</td><td>3.50%</td><td>67</td></tr>
+        <tr><td>7/7 21:30</td><td class="name">미국</td><td class="name">무역수지</td><td>-$78.8b</td><td>-$55.9b</td><td>85</td></tr>
+        <tr><td>7/8 08:00</td><td class="name">한국</td><td class="name">BoP 경상수지</td><td>-</td><td>$28,292.3m</td><td>74</td></tr>
+        <tr><td>7/9 03:00</td><td class="name">미국</td><td class="name">FOMC 의사록 (6/17)</td><td>-</td><td>-</td><td>60</td></tr>
+        <tr><td>7/9 10:30</td><td class="name">중국</td><td class="name">CPI / PPI (전년비)</td><td>-</td><td>1.20% / 3.90%</td><td>98</td></tr>
+        <tr><td>7/9 23:00</td><td class="name">미국</td><td class="name">기존주택매매</td><td>4.24m</td><td>4.17m</td><td>87</td></tr>
+        <tr><td>7/10 21:30</td><td class="name">캐나다</td><td class="name">실업률</td><td>6.80%</td><td>6.60%</td><td>92</td></tr>
+      </table>
+      <div class="src">자료: Infomax, Bloomberg, KB국민은행, 신한은행 S&T센터</div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    본 자료는 KB국민은행 및 신한은행 S&amp;T센터의 조사분석자료를 종합한 정보 제공용 대시보드로, 투자 권유 목적이 아닙니다.<br>
+    Data compiled from KB Kookmin Bank (이민혁) &amp; Shinhan Bank S&amp;T Center (백석현·소재용) research, 2026-07-06.
+  </div>
+
+</div>
+
+<script>
+  // Tab switching
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Equity bar chart
+  const equityCtx = document.getElementById('equityChart');
+  if (equityCtx) {
+    new Chart(equityCtx, {
+      type: 'bar',
+      data: {
+        labels: ['KOSPI','KOSDAQ','미국 DOW','중국 상해','일본 Nikkei','영국 FTSE'],
+        datasets: [{
+          label: '전일 등락률 (%)',
+          data: [5.76, 0.19, 1.14, 0.37, 1.47, 0.25],
+          backgroundColor: ['#185fa5','#185fa5','#e34948','#1baf7a','#e34948','#1baf7a'],
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { callback: v => v + '%' } } }
+      }
+    });
+  }
+
+  // IRS/CRS curve chart
+  const irsCtx = document.getElementById('irsCrsChart');
+  if (irsCtx) {
+    new Chart(irsCtx, {
+      type: 'line',
+      data: {
+        labels: ['1Y','2Y','3Y','4Y','5Y','7Y','10Y'],
+        datasets: [
+          {
+            label: 'IRS (원화 고정금리)',
+            data: [3.505, 3.780, 3.868, 3.922, 3.951, 3.987, 4.022],
+            borderColor: '#185fa5',
+            backgroundColor: 'rgba(24,95,165,0.08)',
+            tension: 0.3,
+            fill: true
+          },
+          {
+            label: 'CRS',
+            data: [3.040, 3.245, 3.335, 3.415, 3.475, 3.565, 3.465],
+            borderColor: '#e34948',
+            backgroundColor: 'rgba(227,73,72,0.06)',
+            tension: 0.3,
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: { y: { ticks: { callback: v => v + '%' } } }
+      }
+    });
+  }
+</script>
+</body>
+</html>
